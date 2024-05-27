@@ -1,0 +1,11 @@
+{
+  "name": "tingpng-compress",
+  "version": "1.0.0",
+  "description": "tinypng 压缩脚本",
+  "main": "./dist/compress-image.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
