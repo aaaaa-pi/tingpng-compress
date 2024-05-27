@@ -13,7 +13,7 @@
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
     "md5": "^2.3.0",
-    "pretty-bytes": "^6.1.1",
+    "pretty-bytes": "^0.1.2",
     "through2": "^4.0.2",
     "vinyl-fs": "^4.0.0"
   },
