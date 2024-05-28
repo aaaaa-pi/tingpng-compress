@@ -5,6 +5,14 @@ let apiKeyList = [] // 接口 key 默认为空
 let basePath = process.cwd() // 默认运行脚本所在目录
 let createMd5FormOrigin = false // 不进行压缩操作，只生成现有图片的 md5 信息，并作为缓存。用于「初次项目接入」及手动清理冗余的「图片md5信息」
 
+global.tinypngConf = {
+    apiKeyList: [ // tiny png 的 api key 数组，当其中一个不可用或超过使用次数时，自动切换下一个 key 调用
+    'XgNgkoyWbdIZd8OizINMjX2TpxAd_Gp3', // 无效 key
+    'IAl6s3ekmONUVMEqWZdIp1nV2ItJL1PC', // 无效 key  
+    // 'vZf6N9vkbgHxMccM8bqmkB3QS0j8LXW2', // 有效 key
+    ],
+  }
+
 // 如果有全局传值
 if (global.tinypngConf) {
   basePath = tinypngConf.basePath || basePath
