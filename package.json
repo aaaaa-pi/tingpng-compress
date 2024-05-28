@@ -14,8 +14,8 @@
     "https": "^1.0.0",
     "md5": "^2.3.0",
     "pretty-bytes": "^0.1.2",
-    "through2": "^4.0.2",
-    "vinyl-fs": "^4.0.0"
+    "through2": "^0.4.2",
+    "vinyl-fs": "^3.0.3"
   },
   "devDependencies": {
     "webpack": "^5.91.0",
