@@ -9,7 +9,7 @@ global.tinypngConf = {
     apiKeyList: [ // tiny png 的 api key 数组，当其中一个不可用或超过使用次数时，自动切换下一个 key 调用
     'XgNgkoyWbdIZd8OizINMjX2TpxAd_Gp3', // 无效 key
     'IAl6s3ekmONUVMEqWZdIp1nV2ItJL1PC', // 无效 key  
-    // 'vZf6N9vkbgHxMccM8bqmkB3QS0j8LXW2', // 有效 key
+    'vZf6N9vkbgHxMccM8bqmkB3QS0j8LXW2', // 有效 key
     ],
   }
 

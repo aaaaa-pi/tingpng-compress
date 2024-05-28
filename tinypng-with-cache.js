@@ -2,8 +2,8 @@ const axios = require('axios');
 const https = require('https');
 const through = require('through2');
 const fs = require('fs');
-const md5 = require('md5'); // 示范使用md5库
-const prettyBytes = require('pretty-bytes'); // 示范使用pretty-bytes库
+const md5 = require('md5'); 
+const prettyBytes = require('pretty-bytes'); 
 const SCRIPT_NAME = 'tinypng-compress' // 插件名
 
 let _createMd5FormOrigin = false // 不进行压缩操作，只生成现有图片的 md5 信息，并作为缓存。只会在接入本项目时用一次。
@@ -33,14 +33,7 @@ process.on('exit', () => recordResult(true))
 
 // 记录压缩结果
 function recordResult (withLog) {
-    const record = 
-    `
-        共压缩 ${compressionInfo.num} 个文件，
-        压缩前 ${prettyBytes(compressionInfo.originSize)}，
-        压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，
-        节省 ${prettyBytes(compressionInfo.saveSize)} 空间，
-        压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%
-    `
+    const record = `共压缩 ${compressionInfo.num} 个文件，压缩前 ${prettyBytes(compressionInfo.originSize)}，压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，节省 ${prettyBytes(compressionInfo.saveSize)} 空间，压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%`
     withLog && console._log(record)
     const _recordList = [].concat(recordList)
     _recordList.push(record)
@@ -66,6 +59,7 @@ class ApiKeyManager {
     constructor(apiKeys) {
         this.apiKeys = apiKeys
         this.currentKeyIndex = 0
+        this.AUTH_TOKEN = ''
         this.updateAuthToken()
     }
 
@@ -87,7 +81,7 @@ class ApiKeyManager {
     
     nextKey() {
         this.currentKeyIndex++;
-        console.log('apiKey 已超使用限制，切换下一个')
+        console.log('apiKey 无效或已超使用限制，切换下一个')
         return this.updateAuthToken();
     }
 }
@@ -95,7 +89,7 @@ class ApiKeyManager {
 async function tinypng(file, apiKeyManager, cb) {
     try {
       const response = await axios({
-        method: 'post',
+        method: 'POST',
         url: 'https://api.tinypng.com/shrink',
         data: file.contents,
         headers: {
@@ -129,10 +123,9 @@ async function tinypng(file, apiKeyManager, cb) {
         handleError(results.message, apiKeyManager, tinypng.bind(null, file, apiKeyManager, cb), () => cb(file.contents));
       }
     } catch (error) {
-        handleError(error.message, apiKeyManager, tinypng.bind(null, file, apiKeyManager, cb), () => cb(file.contents)); // 错误情况下调用检查API Key的函数
+        handleError(error.response.data.message, apiKeyManager, tinypng.bind(null, file, apiKeyManager, cb), () => cb(file.contents)); // 错误情况下调用检查API Key的函数
     }
   }
-
 
 // 处理错误信息：api调用或者是文件压缩的错误信息
 async function handleError(errorMsg, apiKeyManager, tryNextKeyCb, skipFileCb) {
@@ -143,7 +136,7 @@ async function handleError(errorMsg, apiKeyManager, tryNextKeyCb, skipFileCb) {
     ];
     if (keyErrorList.includes(errorMsg)) {
       if (apiKeyManager.nextKey()) {
-        return await tryNextKeyCb(); // 使用更新后的API Key重试压缩
+        tryNextKeyCb(); // 使用更新后的API Key重试压缩
       } else {
         clearInterval(intervalId)
       }
@@ -218,7 +211,6 @@ function main({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompressP
                 }
                 this.push(file)
                 recordResult()
-                // _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList, null, 2)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
                 return callback()
             })
         }
