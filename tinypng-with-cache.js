@@ -19,7 +19,7 @@ class ApiKeyManager {
             console.log(`使用第 ${this.currentKeyIndex + 1}个 apiKey: ${currentKey}`);
             return true;
         } else {
-            console.log('提供的 apiKey 已均不可用，压缩结束。');
+            console.log('\n提供的 apiKey 已均不可用，压缩结束。');
             return false;
         }
     }
@@ -30,7 +30,7 @@ class ApiKeyManager {
 
     nextKey() {
         this.currentKeyIndex++;
-        console.log('apiKey 无效或已超使用限制，切换下一个');
+        console.log('\napiKey 无效或已超使用限制，切换下一个');
         return this.updateAuthToken();
     }
 }
@@ -63,9 +63,16 @@ class TinyPngCompressor {
     // 初始化 md5 记录列表
     initializeMd5RecordList() {
         try {
-            this.md5RecordList = JSON.parse(fs.readFileSync(this._md5RecordFilePath) || '[]');
+            if (fs.existsSync(this._md5RecordFilePath)) {
+                const fileContent = fs.readFileSync(this._md5RecordFilePath, 'utf8');
+                this.md5RecordList = JSON.parse(fileContent || '[]');
+            } else {
+                this.md5RecordList = [];
+                fs.writeFileSync(this._md5RecordFilePath, '[]', 'utf8');
+            }
         } catch (e) {
-            console.error('[error] : 读取 md5 记录文件出错了 - ', e);
+            // 如果解析 JSON 失败，初始化为空数组
+            this.md5RecordList = [];
         }
     }
 
@@ -96,7 +103,7 @@ class TinyPngCompressor {
         this.currentFileName = file.relative;
         let prevSize = file.contents.length;
         if (!prevSize) {
-            console.log(`${this.currentFileName} 文件信息错误，无法获取文件大小，跳过压缩`);
+            console.log(`\n${this.currentFileName} 文件信息错误，无法获取文件大小，跳过压缩`);
             return file;
         }
 
@@ -140,7 +147,7 @@ class TinyPngCompressor {
                     });
                     cb(compressedFileResponse.data);
                 } catch (downLoadError) {
-                    console.log('[error] : 文件下载错误 - ', downLoadError);
+                    console.log('\n[error] : 文件下载错误 - ', downLoadError);
                 }
             } else {
                 this.handleError(results.message, () => this.tinypng(file, cb), () => cb(file.contents));
@@ -160,7 +167,7 @@ class TinyPngCompressor {
                 tryNextKeyCb();
             } else {
                 clearInterval(this.intervalId);
-                console.log('所有API Key均已失效或超限，无法继续压缩。');
+                console.log('\n所有API Key均已失效或超限，无法继续压缩。');
             }
         } else {
             console.log('[error] : 文件不可压缩 - ', errorMsg);
@@ -181,7 +188,7 @@ class TinyPngCompressor {
 
     handleLowCompression(file, compressPercentStr) {
         this.md5RecordList.push(md5(file.contents));
-        console.log(`压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`);
+        console.log(`\n压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`);
     }
 
     handleSuccessfulCompression(file, data, prevSize, compressPercent) {
@@ -190,7 +197,7 @@ class TinyPngCompressor {
         this.md5RecordList.push(md5(data));
         const record = this.createCompressionRecord(file, prevSize, data.length, compressPercent);
         this.recordList.push(record);
-        console.log(record);
+        console.log('\n' + record);
     }
 
     updateCompressionInfo(prevSize, newSize) {
@@ -211,7 +218,7 @@ class TinyPngCompressor {
 
     recordResult(withLog = false) {
         const record = `共压缩 ${this.compressionInfo.num} 个文件，压缩前 ${prettyBytes(this.compressionInfo.originSize)}，压缩后 ${prettyBytes(this.compressionInfo.originSize - this.compressionInfo.saveSize)}，节省 ${prettyBytes(this.compressionInfo.saveSize)} 空间，压缩百分比 ${((this.compressionInfo.saveSize / (this.compressionInfo.originSize || 1)) * 100).toFixed(0)}%`;
-        withLog && console.log(record);
+        withLog && console.log('\n' + record);
         const _recordList = [].concat(this.recordList);
         _recordList.push(record);
         this._md5RecordFilePath && fs.writeFileSync(this._md5RecordFilePath, JSON.stringify(this.md5RecordList, null, 2));

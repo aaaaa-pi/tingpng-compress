@@ -59,9 +59,9 @@ const tinypng = tinypngWithCache(options);
       
       if (compressedFile.contents !== fileContents) {
         await fs.writeFile(filePath, compressedFile.contents);
-        console.log(`File compressed and saved: ${file}`);
+        console.log(`${file}`);
       } else {
-        console.log(`File skipped: ${file}`);
+        console.log(`未压缩: ${file}`);
       }
     }
   } catch (error) {
